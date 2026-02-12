@@ -5,6 +5,7 @@ export interface BackendUser {
   name: string;
   email: string;
   phone: string | null;
+  nid?: string | null;
   profilePictureUrl: string | null;
   roleName: string;
   createdAt: string;
