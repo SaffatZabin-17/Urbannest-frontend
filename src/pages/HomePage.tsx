@@ -1,35 +1,65 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
+import { getPresignedPreviewUrl } from '@/api/endpoints';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export default function HomePage() {
-  const { loggedIn, currentUser, logout } = useAuth();
+  const { loggedIn } = useAuth();
   const { backendUser } = useUser();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  console.log(backendUser?.profilePictureUrl);
+  useEffect(() => {
+    if (!backendUser?.profilePictureUrl) return;
+
+    let ignore = false;
+    const key = backendUser.profilePictureUrl;
+
+    const fetchUrl = () =>
+      getPresignedPreviewUrl(key)
+        .then((url) => {
+          if (!ignore) setAvatarUrl(url);
+        })
+        .catch(() => {
+          if (!ignore) setAvatarUrl(null);
+        });
+
+    fetchUrl();
+    const intervalId = setInterval(fetchUrl, 55 * 60 * 1000);
+
+    return () => {
+      ignore = true;
+      clearInterval(intervalId);
+    };
+  }, [backendUser?.profilePictureUrl]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center bg-background">
       {loggedIn ? (
         <div className="text-center space-y-4">
-          <Avatar size="lg" className="mx-auto size-16">
+          <Avatar className="size-20 mx-auto">
             <AvatarImage
-              src={backendUser?.profilePictureUrl ?? undefined}
+              src={
+                backendUser?.profilePictureUrl
+                  ? (avatarUrl ?? undefined)
+                  : undefined
+              }
               referrerPolicy="no-referrer"
             />
-            <AvatarFallback className="text-lg">
+            <AvatarFallback className="text-2xl">
               {backendUser?.name?.charAt(0).toUpperCase() ?? '?'}
             </AvatarFallback>
           </Avatar>
-          <h1 className="text-3xl font-bold">
-            {backendUser?.name ?? 'You are logged in'}
-          </h1>
-          <p className="text-muted-foreground">{currentUser?.email}</p>
-          <Button onClick={logout} variant="outline" className="cursor-pointer">
-            Sign out
-          </Button>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">
+              Welcome back, {backendUser?.name ?? 'User'}
+            </h1>
+            <p className="text-muted-foreground">
+              Your dashboard will appear here soon.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="text-center space-y-4">
