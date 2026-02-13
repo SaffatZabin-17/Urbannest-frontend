@@ -25,10 +25,15 @@ export async function registerUserUsingEmail(data: {
     body: JSON.stringify(data),
   });
 
-  const result = await response.json();
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error(`Registration failed: ${response.status}`);
+  }
 
   if (!result.success) {
-    throw new Error(result.message);
+    throw new Error(result.message || 'Registration failed');
   }
 
   return result;
@@ -44,10 +49,15 @@ export async function registerUserUsingGoogle() {
     },
   });
 
-  const result = await response.json();
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error(`Registration failed: ${response.status}`);
+  }
 
   if (!result.success) {
-    throw new Error(result.message);
+    throw new Error(result.message || 'Registration failed');
   }
 
   return result;

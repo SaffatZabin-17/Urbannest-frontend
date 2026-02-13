@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Building2, Users, Home, Star } from 'lucide-react';
 import GoogleIcon from '@/components/icons/GoogleIcon';
+import { auth } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import { useNavigate } from 'react-router-dom';
@@ -55,7 +56,13 @@ export default function SignupPage() {
         .value;
       const nid = (form.elements.namedItem('nid') as HTMLInputElement).value;
 
-      await registerUserUsingEmail({ name, email, phone, nid });
+      try {
+        await registerUserUsingEmail({ name, email, phone, nid });
+      } catch (backendErr) {
+        await auth.currentUser?.delete();
+        throw backendErr;
+      }
+
       const data = await fetchCurrentUser();
       setBackendUser(data);
       navigate('/');
