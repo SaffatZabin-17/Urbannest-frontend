@@ -1,73 +1,165 @@
-# React + TypeScript + Vite
+# UrbanNest
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack real estate platform where users can browse properties, connect with sellers, and discover their dream home.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Frontend
 
-## React Compiler
+| Technology       | Version | Purpose                                        |
+| ---------------- | ------- | ---------------------------------------------- |
+| React            | 19.2    | UI framework                                   |
+| TypeScript       | 5.9     | Type-safe JavaScript                           |
+| Vite             | 7.2     | Build tool and dev server                      |
+| Tailwind CSS     | 4.1     | Utility-first CSS framework                    |
+| shadcn/ui        | -       | Component library built on Radix UI            |
+| React Router DOM | 7.13    | Client-side routing                            |
+| Firebase SDK     | 12.9    | Authentication (email/password + Google OAuth) |
+| Lucide React     | -       | Icon library                                   |
+| Sonner           | -       | Toast notifications                            |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Backend
 
-## Expanding the ESLint configuration
+| Technology         | Purpose                     |
+| ------------------ | --------------------------- |
+| Spring Boot (Java) | REST API server             |
+| PostgreSQL         | Relational database         |
+| Firebase Admin SDK | Token verification and auth |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### AWS Services
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Service                   | Purpose                                                   |
+| ------------------------- | --------------------------------------------------------- |
+| EC2                       | Hosts the Spring Boot backend                             |
+| ECR                       | Docker container registry for backend images              |
+| RDS                       | Managed PostgreSQL database                               |
+| S3 (`urbannest-s3`)       | Private bucket for user-uploaded files (profile pictures) |
+| S3 (`urbannest-frontend`) | Static hosting for the built frontend                     |
+| CloudFront                | CDN that serves the frontend from S3 with HTTPS           |
+| ACM                       | SSL/TLS certificates for custom domains                   |
+| IAM                       | Access management for CI/CD and service permissions       |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### External Services
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+| Service                 | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
+| Firebase Authentication | User sign-in (email/password and Google OAuth) |
+| Porkbun                 | Domain registrar and DNS management            |
+| GitHub Actions          | CI/CD pipeline for frontend deployment         |
+
+## Architecture
+
+```
+                        https://urbannest.website
+                                  |
+                              CloudFront
+                                  |
+                          S3 (urbannest-frontend)
+                          (React SPA static files)
+
+                    https://backend.urbannest.website
+                                  |
+                            EC2 (Spring Boot)
+                              /        \
+                           RDS          S3 (urbannest-s3)
+                       (PostgreSQL)     (file storage)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Project Structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
 ```
+src/
+├── api/
+│   ├── endpoints.ts          # API functions (register, login, upload, etc.)
+│   └── types.ts              # TypeScript interfaces (BackendUser, context types)
+├── components/
+│   ├── auth/utilities/       # Firebase auth functions (login, register, logout)
+│   ├── icons/                # Custom icon components
+│   ├── layout/               # Navbar
+│   └── ui/                   # shadcn/ui components (button, card, dialog, etc.)
+├── config/
+│   └── firebase.ts           # Firebase initialization
+├── contexts/
+│   ├── AuthContext.tsx        # Firebase auth state (currentUser, loggedIn)
+│   └── UserContext.tsx        # Backend user data (profile, role)
+├── hooks/
+│   ├── useAuth.ts            # Access auth context
+│   └── useUser.ts            # Access user context
+├── pages/
+│   ├── HomePage.tsx           # Landing page
+│   ├── LoginPage.tsx          # Email/password + Google login
+│   ├── SignupPage.tsx         # User registration
+│   └── ProfilePage.tsx        # Profile view/edit with image upload
+├── App.tsx                    # Routes and layout
+└── main.tsx                   # Entry point
+```
+
+## Routes
+
+| Path       | Page    | Access                   |
+| ---------- | ------- | ------------------------ |
+| `/`        | Home    | All users                |
+| `/login`   | Login   | Guests only              |
+| `/signup`  | Signup  | Guests only              |
+| `/profile` | Profile | Authenticated users only |
+
+## API Endpoints
+
+| Function                  | Method | Endpoint                    | Description                           |
+| ------------------------- | ------ | --------------------------- | ------------------------------------- |
+| `registerUserUsingEmail`  | POST   | `/api/users`                | Register with email, name, phone, NID |
+| `registerUserUsingGoogle` | POST   | `/api/users`                | Register via Google OAuth             |
+| `fetchCurrentUser`        | GET    | `/api/users/me`             | Get current user's profile            |
+| `updateUser`              | PATCH  | `/api/users/me`             | Update profile fields                 |
+| `getPresignedUploadUrl`   | POST   | `/api/s3/upload-request`    | Get S3 presigned URL for upload       |
+| `getPresignedPreviewUrl`  | GET    | `/api/s3/download-url?key=` | Get S3 presigned URL for preview      |
+
+All endpoints require a Firebase ID token via `Authorization: Bearer <token>` header.
+
+## CI/CD Pipeline
+
+On every push to `main`, GitHub Actions:
+
+1. Checks out the code
+2. Installs dependencies (`npm ci`)
+3. Builds the project (`npm run build`) with environment variables from GitHub Secrets
+4. Syncs the `dist/` output to the S3 frontend bucket
+5. Invalidates the CloudFront cache
+
+## Environment Variables
+
+| Variable                            | Description                       |
+| ----------------------------------- | --------------------------------- |
+| `VITE_API_BASE_URL`                 | Backend API base URL              |
+| `VITE_FIREBASE_AUTH_API_KEY`        | Firebase API key                  |
+| `VITE_FIREBASE_AUTH_DOMAIN`         | Firebase auth domain              |
+| `VITE_FIREBASE_PROJECT_ID`          | Firebase project ID               |
+| `VITE_FIREBASE_STORAGE_BUCKET`      | Firebase storage bucket           |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID      |
+| `VITE_FIREBASE_APP_ID`              | Firebase app ID                   |
+| `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase analytics measurement ID |
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Lint
+npm run lint
+
+# Format
+npm run format
+```
+
+## Code Quality
+
+- **ESLint** with TypeScript-aware rules
+- **Prettier** for consistent formatting
+- **Husky** + **lint-staged** for pre-commit hooks (auto-formats staged files)
