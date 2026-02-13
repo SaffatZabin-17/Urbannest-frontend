@@ -25,11 +25,13 @@ export async function registerUserUsingEmail(data: {
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    throw new Error(`Registration failed: ${response.status}`);
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.message);
   }
 
-  return response.json();
+  return result;
 }
 
 export async function registerUserUsingGoogle() {
@@ -42,11 +44,13 @@ export async function registerUserUsingGoogle() {
     },
   });
 
-  if (!response.ok) {
-    throw new Error(`Google registration failed: ${response.status}`);
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.message);
   }
 
-  return response.json();
+  return result;
 }
 
 export async function fetchCurrentUser() {

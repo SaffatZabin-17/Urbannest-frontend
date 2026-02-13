@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   registerUserUsingEmail,
   registerUserUsingGoogle,
+  fetchCurrentUser,
 } from '@/api/endpoints';
 
 export default function SignupPage() {
@@ -54,18 +55,21 @@ export default function SignupPage() {
         .value;
       const nid = (form.elements.namedItem('nid') as HTMLInputElement).value;
 
-      const data = await registerUserUsingEmail({ name, email, phone, nid });
+      await registerUserUsingEmail({ name, email, phone, nid });
+      const data = await fetchCurrentUser();
       setBackendUser(data);
       navigate('/');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
-      setError(
-        code === 'auth/email-already-in-use'
-          ? 'An account with this email already exists'
-          : code === 'auth/weak-password'
-            ? 'Password must be at least 6 characters'
-            : 'Something went wrong. Please try again.'
-      );
+      if (code === 'auth/email-already-in-use') {
+        setError('An account with this email already exists');
+      } else if (code === 'auth/weak-password') {
+        setError('Password must be at least 6 characters');
+      } else if (err instanceof Error && err.message) {
+        setError(err.message);
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     }
   };
 
@@ -73,11 +77,16 @@ export default function SignupPage() {
     setError('');
     try {
       await googleLogin();
-      const data = await registerUserUsingGoogle();
+      await registerUserUsingGoogle();
+      const data = await fetchCurrentUser();
       setBackendUser(data);
       navigate('/');
-    } catch {
-      setError('Google sign-in failed. Please try again.');
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message) {
+        setError(err.message);
+      } else {
+        setError('Google sign-in failed. Please try again.');
+      }
     }
   };
 
