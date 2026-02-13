@@ -48,13 +48,17 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!backendUser?.profilePictureUrl) return;
 
-    let ignore = false;
-    const key = backendUser.profilePictureUrl;
+    const picUrl = backendUser.profilePictureUrl;
 
-    console.log(key);
+    if (picUrl.startsWith('http')) {
+      setAvatarUrl(picUrl);
+      return;
+    }
+
+    let ignore = false;
 
     const fetchUrl = () =>
-      getPresignedPreviewUrl(key)
+      getPresignedPreviewUrl(picUrl)
         .then((url) => {
           if (!ignore) setAvatarUrl(url);
         })

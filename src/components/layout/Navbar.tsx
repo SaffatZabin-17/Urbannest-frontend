@@ -24,11 +24,17 @@ export default function Navbar() {
   useEffect(() => {
     if (!backendUser?.profilePictureUrl) return;
 
+    const picUrl = backendUser.profilePictureUrl;
+
+    if (picUrl.startsWith('http')) {
+      setAvatarUrl(picUrl);
+      return;
+    }
+
     let ignore = false;
-    const key = backendUser.profilePictureUrl;
 
     const fetchUrl = () =>
-      getPresignedPreviewUrl(key)
+      getPresignedPreviewUrl(picUrl)
         .then((url) => {
           if (!ignore) setAvatarUrl(url);
         })
