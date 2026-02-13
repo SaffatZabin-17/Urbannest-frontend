@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import {
   updateUser,
+  fetchCurrentUser,
   getPresignedUploadUrl,
   getPresignedPreviewUrl,
 } from '@/api/endpoints';
@@ -132,12 +133,17 @@ export default function ProfilePage() {
         payload.profilePictureUrl = key;
       }
 
-      const data = await updateUser(payload);
+      await updateUser(payload);
+      const data = await fetchCurrentUser();
       setBackendUser(data);
 
       if (selectedFile && data.profilePictureUrl) {
-        const url = await getPresignedPreviewUrl(data.profilePictureUrl);
-        setAvatarUrl(url);
+        if (data.profilePictureUrl.startsWith('http')) {
+          setAvatarUrl(data.profilePictureUrl);
+        } else {
+          const url = await getPresignedPreviewUrl(data.profilePictureUrl);
+          setAvatarUrl(url);
+        }
       }
 
       setEditing(false);
