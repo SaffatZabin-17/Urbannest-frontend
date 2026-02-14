@@ -2,10 +2,72 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* ── Fonts ── */
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/ManropeRegular.ttf');
+  font-family: 'Manrope';
+  font-weight: 400;
+}
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/ManropeMedium.ttf');
+  font-family: 'Manrope';
+  font-weight: 500;
+}
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/ManropeSemiBold.ttf');
+  font-family: 'Manrope';
+  font-weight: 600;
+}
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/ManropeBold.ttf');
+  font-family: 'Manrope';
+  font-weight: 700;
+}
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/ManropeExtraBold.ttf');
+  font-family: 'Manrope';
+  font-weight: 800;
+}
+@font-face {
+  font-display: swap;
+  font-style: normal;
+  src: url('./assets/fonts/MarkoOneRegular.ttf');
+  font-family: 'Marko One';
+  font-weight: 400;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --radius: 0.625rem;
+
+  /* ── UrbanNest theme colors ── */
+  --custom-dark: #191919;
+  --custom-orange: #ff8b46;
+  --custom-orange-light: #ff9e65;
+  --custom-orange-deep: #fd650b;
+  --custom-orange-dark: #883301;
+  --custom-blue-gray: #406f85;
+  --custom-bg-warm-1: #fff9f5;
+  --custom-bg-warm-2: #fff9f6;
+  --custom-bg-warm-3: #fff7f0;
+  --custom-bg-cool: #f9fdff;
+  --custom-orange-bg: #fbeee6;
+  --custom-red-light: #ffe0ce;
+  --custom-gray-300: #dbdbdb;
+  --custom-gray-400: #c4c4c4;
+  --custom-gray-600: #6e6e6e;
+  --custom-gray-700: #626262;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -40,6 +102,9 @@
 }
 
 @theme inline {
+  --font-manrope: 'Manrope', sans-serif;
+  --font-marko: 'Marko One', serif;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -47,6 +112,25 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-custom-dark: var(--custom-dark);
+  --color-custom-orange: var(--custom-orange);
+  --color-custom-orange-light: var(--custom-orange-light);
+  --color-custom-orange-deep: var(--custom-orange-deep);
+  --color-custom-orange-dark: var(--custom-orange-dark);
+  --color-custom-blue-gray: var(--custom-blue-gray);
+  --color-custom-bg-warm-1: var(--custom-bg-warm-1);
+  --color-custom-bg-warm-2: var(--custom-bg-warm-2);
+  --color-custom-bg-warm-3: var(--custom-bg-warm-3);
+  --color-custom-bg-cool: var(--custom-bg-cool);
+  --color-custom-orange-bg: var(--custom-orange-bg);
+  --color-custom-red-light: var(--custom-red-light);
+  --color-custom-gray-300: var(--custom-gray-300);
+  --color-custom-gray-400: var(--custom-gray-400);
+  --color-custom-gray-600: var(--custom-gray-600);
+  --color-custom-gray-700: var(--custom-gray-700);
+
+  --shadow-custom: 0px 30px 30px 0px #91aebb33;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -119,6 +203,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-manrope;
   }
 }
