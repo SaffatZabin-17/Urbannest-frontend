@@ -6,18 +6,19 @@ A full-stack real estate platform where users can browse properties, connect wit
 
 ### Frontend
 
-| Technology       | Version | Purpose                                        |
-| ---------------- | ------- | ---------------------------------------------- |
-| React            | 19.2    | UI framework                                   |
-| TypeScript       | 5.9     | Type-safe JavaScript                           |
-| Vite             | 7.2     | Build tool and dev server                      |
-| Tailwind CSS     | 4.1     | Utility-first CSS framework                    |
-| shadcn/ui        | -       | Component library built on Radix UI            |
-| React Router DOM | 7.13    | Client-side routing                            |
-| Firebase SDK     | 12.9    | Authentication (email/password + Google OAuth) |
-| Lucide React     | -       | Icon library                                   |
-| Sonner           | -       | Toast notifications                            |
-| Orval            | 7.13    | OpenAPI client code generation                 |
+| Technology           | Version | Purpose                                        |
+| -------------------- | ------- | ---------------------------------------------- |
+| React                | 19.2    | UI framework                                   |
+| TypeScript           | 5.9     | Type-safe JavaScript                           |
+| Vite                 | 7.2     | Build tool and dev server                      |
+| Tailwind CSS         | 4.1     | Utility-first CSS framework                    |
+| shadcn/ui            | -       | Component library built on Radix UI            |
+| React Router DOM     | 7.13    | Client-side routing                            |
+| Firebase SDK         | 12.9    | Authentication (email/password + Google OAuth) |
+| Lucide React         | -       | Icon library                                   |
+| Sonner               | -       | Toast notifications                            |
+| Orval                | 7.13    | OpenAPI client code generation                 |
+| Google Maps (vis.gl) | 1.7     | Interactive maps, geocoding, and nearby places |
 
 ### Backend
 
@@ -42,11 +43,12 @@ A full-stack real estate platform where users can browse properties, connect wit
 
 ### External Services
 
-| Service                 | Purpose                                        |
-| ----------------------- | ---------------------------------------------- |
-| Firebase Authentication | User sign-in (email/password and Google OAuth) |
-| Porkbun                 | Domain registrar and DNS management            |
-| GitHub Actions          | CI/CD pipeline for frontend deployment         |
+| Service                 | Purpose                                              |
+| ----------------------- | ---------------------------------------------------- |
+| Firebase Authentication | User sign-in (email/password and Google OAuth)       |
+| Google Maps Platform    | Maps JavaScript API, Places API (New), Geocoding API |
+| Porkbun                 | Domain registrar and DNS management                  |
+| GitHub Actions          | CI/CD pipeline for frontend deployment               |
 
 ## Architecture
 
@@ -82,6 +84,20 @@ src/
 │   │   └── footer/           # Site footer with social links
 │   ├── icons/                # Custom icon components
 │   ├── layout/               # Navbar (authenticated dropdown)
+│   ├── listing/
+│   │   ├── browse/           # Listing search/filter components (filters, grid, pagination)
+│   │   ├── create/           # Listing creation form (sections, sidebar, controller hook)
+│   │   ├── ListingCard.tsx   # Reusable listing card component
+│   │   └── utils.ts          # Shared listing utilities (formatLabel, etc.)
+│   ├── map/
+│   │   ├── hooks/            # useReverseGeocode, useAddressAutocomplete, useNearbyPlaces
+│   │   ├── LocationPicker.tsx # Interactive map for listing creation (click to select, autocomplete)
+│   │   ├── LocationViewer.tsx # Read-only map for listing detail (pin, nearby places, radius)
+│   │   ├── NearbyPlacesToolbar.tsx # Category toggle buttons for nearby places
+│   │   ├── RadiusCircle.tsx  # 2km radius circle overlay on map
+│   │   ├── MapProvider.tsx   # Per-page APIProvider wrapper
+│   │   ├── constants.ts      # Map ID, default center, place categories
+│   │   └── types.ts          # LatLng, GeocodedAddress, NearbyPlace
 │   └── ui/                   # shadcn/ui components (button, card, dialog, etc.)
 ├── config/
 │   └── firebase.ts           # Firebase initialization
@@ -95,7 +111,11 @@ src/
 │   ├── HomePage.tsx           # Landing page
 │   ├── LoginPage.tsx          # Email/password + Google login
 │   ├── SignupPage.tsx         # User registration
-│   └── ProfilePage.tsx        # Profile view/edit with image upload
+│   ├── ProfilePage.tsx        # Profile view/edit with image upload
+│   ├── SearchPage.tsx         # Property search page
+│   ├── ListingsPage.tsx       # Browse listings with filters and pagination
+│   ├── ListingCreatePage.tsx  # Create new listing (form + map picker)
+│   └── ListingViewPage.tsx    # Listing detail (gallery, details, map viewer)
 ├── App.tsx                    # Routes and layout
 └── main.tsx                   # Entry point
 orval.config.ts                # Orval configuration (OpenAPI → TypeScript)
@@ -103,12 +123,16 @@ orval.config.ts                # Orval configuration (OpenAPI → TypeScript)
 
 ## Routes
 
-| Path       | Page    | Access                   |
-| ---------- | ------- | ------------------------ |
-| `/`        | Home    | All users                |
-| `/login`   | Login   | Guests only              |
-| `/signup`  | Signup  | Guests only              |
-| `/profile` | Profile | Authenticated users only |
+| Path              | Page           | Access                   |
+| ----------------- | -------------- | ------------------------ |
+| `/`               | Home           | All users                |
+| `/login`          | Login          | Guests only              |
+| `/signup`         | Signup         | Guests only              |
+| `/profile`        | Profile        | Authenticated users only |
+| `/search`         | Search         | All users                |
+| `/listing`        | Listings       | All users                |
+| `/listing/create` | Create Listing | Authenticated users only |
+| `/listing/:id`    | Listing Detail | All users                |
 
 ## API Client
 
@@ -147,6 +171,39 @@ A custom fetch mutator (`src/api/custom-fetch.ts`) automatically injects the Fir
 
 All endpoints (except `getListings` and `health`) require a Firebase ID token via `Authorization: Bearer <token>` header.
 
+## Google Maps Integration
+
+The platform uses Google Maps for interactive location selection and display. The Maps JavaScript API is loaded per-page via `MapProvider` (a thin `APIProvider` wrapper) rather than globally.
+
+### Required Google APIs
+
+- **Maps JavaScript API** — Renders the map
+- **Places API (New)** — Address autocomplete (`PlaceAutocompleteElement`) and nearby place search
+- **Geocoding API** — Reverse geocoding (click coordinates → structured address)
+
+### Components
+
+| Component             | Used in          | Purpose                                                                                                                |
+| --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `LocationPicker`      | Listing creation | Interactive map with click-to-select and address autocomplete. Fills address, area, district, zip code, lat/lng fields |
+| `LocationViewer`      | Listing detail   | Read-only map showing listing pin, nearby places (7 categories), and 2km radius circle                                 |
+| `NearbyPlacesToolbar` | Listing detail   | Toggle buttons for nearby place categories (schools, hospitals, parks, restaurants, malls, transport, mosques)         |
+| `RadiusCircle`        | Listing detail   | 2km radius overlay drawn imperatively on the map                                                                       |
+
+### Hooks
+
+| Hook                     | Purpose                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `useReverseGeocode`      | Converts lat/lng to structured address via Geocoding API                        |
+| `useAddressAutocomplete` | Appends `PlaceAutocompleteElement` web component for address search             |
+| `useNearbyPlaces`        | Fetches and caches nearby places by category via `PlacesService.nearbySearch()` |
+
+### Setup
+
+1. Enable Maps JavaScript API, Places API (New), and Geocoding API in [Google Cloud Console](https://console.cloud.google.com/apis)
+2. Create a Map ID (Vector type) in Maps Platform → Map Management
+3. Set `VITE_GOOGLE_MAPS_API_KEY` in `.env`
+
 ## CI/CD Pipeline
 
 On every push to `main`, GitHub Actions:
@@ -169,6 +226,7 @@ On every push to `main`, GitHub Actions:
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID      |
 | `VITE_FIREBASE_APP_ID`              | Firebase app ID                   |
 | `VITE_FIREBASE_MEASUREMENT_ID`      | Firebase analytics measurement ID |
+| `VITE_GOOGLE_MAPS_API_KEY`          | Google Maps JavaScript API key    |
 
 ## Local Development
 
