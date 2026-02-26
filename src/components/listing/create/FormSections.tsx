@@ -38,6 +38,7 @@ import type {
   SetLocationField,
   SetTopField,
 } from './types';
+import { LocationPicker } from '@/components/map/LocationPicker';
 import { formatLabel } from './utils';
 
 type BasicInformationSectionProps = {
@@ -371,6 +372,11 @@ export function LocationSection({
         />
       </CardHeader>
       <CardContent className="space-y-5 px-5 py-5 md:px-6 md:py-6">
+        <LocationPicker
+          location={location}
+          setLocationField={setLocationField}
+        />
+
         <div className="space-y-2">
           <FieldLabel label="Address line" required />
           <Input
