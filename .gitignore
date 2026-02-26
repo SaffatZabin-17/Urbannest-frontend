@@ -26,3 +26,4 @@ dist-ssr
 .env
 
 client/*
+CLAUDE.md
