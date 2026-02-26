@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import {
@@ -35,6 +36,7 @@ import {
   Sparkles,
   UserRound,
   X,
+  LogOut,
 } from 'lucide-react';
 
 function InfoRow({
@@ -80,11 +82,13 @@ function StatTile({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfilePage() {
-  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
   const { backendUser, setBackendUser } = useUser();
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -219,6 +223,28 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSignOut = async () => {
+    setError('');
+    setSigningOut(true);
+
+    try {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+
+      setSelectedFile(null);
+      setEditing(false);
+      await logout();
+      setBackendUser(null);
+      navigate('/login', { replace: true });
+    } catch {
+      setError('Failed to sign out. Please try again.');
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
   const formattedDate = backendUser?.createdAt
     ? new Date(backendUser.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -329,6 +355,15 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-lg border-red-200 bg-white text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
+                  onClick={handleSignOut}
+                  disabled={signingOut || saving}
+                >
+                  <LogOut className="size-4" />
+                  {signingOut ? 'Signing out...' : 'Sign Out'}
+                </Button>
                 {!editing ? (
                   <Button
                     variant="outline"

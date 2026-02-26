@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage';
 import SearchPage from './pages/SearchPage';
 import ListingCreatePage from './pages/ListingCreatePage';
 import ListingsPage from './pages/ListingsPage';
+import ListingViewPage from './pages/ListingViewPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/listing" element={<ListingsPage />} />
         <Route path="/listing/create" element={<ListingCreatePage />} />
+        <Route path="/listing/:id" element={<ListingViewPage />} />
       </Routes>
       <Footer />
     </>

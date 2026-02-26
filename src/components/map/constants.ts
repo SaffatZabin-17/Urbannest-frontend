@@ -18,8 +18,8 @@ export const PLACE_CATEGORIES = [
     type: 'shopping_mall',
     color: '#8B5CF6',
   },
-  { id: 'school', label: 'Schools', type: 'school', color: '#3B82F6' },
-  { id: 'hospital', label: 'Hospitals', type: 'hospital', color: '#EF4444' },
+  { id: 'school', label: 'Schools', type: 'school', color: '#0516AD' },
+  { id: 'hospital', label: 'Hospitals', type: 'hospital', color: '#BF0404' },
   { id: 'park', label: 'Parks', type: 'park', color: '#22C55E' },
   {
     id: 'restaurant',
@@ -31,7 +31,7 @@ export const PLACE_CATEGORIES = [
     id: 'transit_station',
     label: 'Public Transport',
     type: 'transit_station',
-    color: '#6366F1',
+    color: '#9008D4',
   },
   { id: 'mosque', label: 'Mosques', type: 'mosque', color: '#14B8A6' },
 ] as const;
