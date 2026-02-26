@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, BedDouble, Bath, Maximize } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { ListingResponse } from '@/api/model';
+import { formatLabel } from '@/components/listing/utils';
 
 import placeholderImg from '@/assets/logos/img_image_1.png';
 
@@ -18,15 +19,11 @@ function formatPrice(price?: number) {
   }).format(price);
 }
 
-function capitalize(s?: string) {
-  if (!s) return '';
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 export default function ListingCard({ listing }: ListingCardProps) {
   const thumbnail =
-    listing.media?.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0]
-      ?.url ?? placeholderImg;
+    [...(listing.media ?? [])].sort(
+      (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    )[0]?.url ?? placeholderImg;
 
   return (
     <Link
@@ -42,7 +39,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         />
         {listing.propertyType && (
           <Badge className="absolute top-3 left-3 bg-custom-orange text-white text-xs font-semibold border-0">
-            {capitalize(listing.propertyType)}
+            {formatLabel(listing.propertyType)}
           </Badge>
         )}
       </div>

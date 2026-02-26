@@ -7,6 +7,7 @@ import SignupPage from './pages/SignupPage';
 import ProfilePage from './pages/ProfilePage';
 import SearchPage from './pages/SearchPage';
 import ListingCreatePage from './pages/ListingCreatePage';
+import ListingsPage from './pages/ListingsPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/listing" element={<ListingsPage />} />
         <Route path="/listing/create" element={<ListingCreatePage />} />
       </Routes>
       <Footer />

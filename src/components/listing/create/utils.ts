@@ -57,12 +57,7 @@ function toOptionalBoolean(choice: OptionalBooleanChoice) {
   return choice === 'true';
 }
 
-export function formatLabel(value: string) {
-  return value
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
+export { formatLabel } from '../utils';
 
 export function revokeMediaPreviews(items: MediaDraft[]) {
   items.forEach((item) => URL.revokeObjectURL(item.previewUrl));
