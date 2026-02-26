@@ -1,15 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchCurrentUser } from '@/api/endpoints';
-import type { BackendUser, UserContextType } from '@/api/types';
+import { getCurrentUser } from '@/api/generated';
+import type { UserResponse } from '@/api/model';
+import type { UserContextType } from '@/api/types';
 
 export const UserContext = createContext<UserContextType | undefined>(
   undefined
 );
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [backendUser, setBackendUser] = useState<BackendUser | null>(null);
+  const [backendUser, setBackendUser] = useState<UserResponse | null>(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -17,9 +18,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     let ignore = false;
 
-    fetchCurrentUser()
-      .then((data) => {
-        if (!ignore) setBackendUser(data);
+    getCurrentUser()
+      .then((res) => {
+        if (!ignore) setBackendUser(res.data);
       })
       .catch(() => {});
 

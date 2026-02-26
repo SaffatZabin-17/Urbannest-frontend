@@ -17,11 +17,9 @@ import { auth } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import { useNavigate } from 'react-router-dom';
-import {
-  registerUserUsingEmail,
-  registerUserUsingGoogle,
-  fetchCurrentUser,
-} from '@/api/endpoints';
+import { createUser, getCurrentUser } from '@/api/generated';
+import { customFetch } from '@/api/custom-fetch';
+import type { createUserResponse } from '@/api/generated';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -57,14 +55,14 @@ export default function SignupPage() {
       const nid = (form.elements.namedItem('nid') as HTMLInputElement).value;
 
       try {
-        await registerUserUsingEmail({ name, email, phone, nid });
+        await createUser({ name, email, phone, nid });
       } catch (backendErr) {
         await auth.currentUser?.delete();
         throw backendErr;
       }
 
-      const data = await fetchCurrentUser();
-      setBackendUser(data);
+      const res = await getCurrentUser();
+      setBackendUser(res.data);
       navigate('/');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
@@ -84,9 +82,10 @@ export default function SignupPage() {
     setError('');
     try {
       await googleLogin();
-      await registerUserUsingGoogle();
-      const data = await fetchCurrentUser();
-      setBackendUser(data);
+      // Google users register with no body — backend reads Firebase token
+      await customFetch<createUserResponse>('/users', { method: 'POST' });
+      const res = await getCurrentUser();
+      setBackendUser(res.data);
       navigate('/');
     } catch (err: unknown) {
       if (err instanceof Error && err.message) {

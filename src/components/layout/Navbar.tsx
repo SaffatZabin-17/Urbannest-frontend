@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
-import { getPresignedPreviewUrl } from '@/api/endpoints';
+import { getDownloadUrl } from '@/api/generated';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
@@ -34,9 +34,9 @@ export default function Navbar() {
     let ignore = false;
 
     const fetchUrl = () =>
-      getPresignedPreviewUrl(picUrl)
-        .then((url) => {
-          if (!ignore) setAvatarUrl(url);
+      getDownloadUrl({ key: picUrl })
+        .then((res) => {
+          if (!ignore) setAvatarUrl(res.data);
         })
         .catch(() => {
           if (!ignore) setAvatarUrl(null);

@@ -1,19 +1,9 @@
 import type { User } from 'firebase/auth';
-
-export interface BackendUser {
-  userId: string;
-  name: string;
-  email: string;
-  phone: string | null;
-  nid?: string | null;
-  profilePictureUrl: string | null;
-  roleName: string;
-  createdAt: string;
-}
+import type { UserResponse } from '@/api/model';
 
 export interface UserContextType {
-  backendUser: BackendUser | null;
-  setBackendUser: (user: BackendUser | null) => void;
+  backendUser: UserResponse | null;
+  setBackendUser: (user: UserResponse | null) => void;
 }
 
 export interface AuthContextType {
