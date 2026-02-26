@@ -17,6 +17,7 @@ A full-stack real estate platform where users can browse properties, connect wit
 | Firebase SDK     | 12.9    | Authentication (email/password + Google OAuth) |
 | Lucide React     | -       | Icon library                                   |
 | Sonner           | -       | Toast notifications                            |
+| Orval            | 7.13    | OpenAPI client code generation                 |
 
 ### Backend
 
@@ -70,12 +71,17 @@ A full-stack real estate platform where users can browse properties, connect wit
 ```
 src/
 ├── api/
-│   ├── endpoints.ts          # API functions (register, login, upload, etc.)
-│   └── types.ts              # TypeScript interfaces (BackendUser, context types)
+│   ├── generated.ts          # Auto-generated API client (orval)
+│   ├── model/                # Auto-generated TypeScript interfaces (orval)
+│   ├── custom-fetch.ts       # Custom fetch mutator with Firebase auth token injection
+│   └── types.ts              # Context type definitions
 ├── components/
 │   ├── auth/utilities/       # Firebase auth functions (login, register, logout)
+│   ├── common/
+│   │   ├── header/           # Public header with nav links
+│   │   └── footer/           # Site footer with social links
 │   ├── icons/                # Custom icon components
-│   ├── layout/               # Navbar
+│   ├── layout/               # Navbar (authenticated dropdown)
 │   └── ui/                   # shadcn/ui components (button, card, dialog, etc.)
 ├── config/
 │   └── firebase.ts           # Firebase initialization
@@ -92,6 +98,7 @@ src/
 │   └── ProfilePage.tsx        # Profile view/edit with image upload
 ├── App.tsx                    # Routes and layout
 └── main.tsx                   # Entry point
+orval.config.ts                # Orval configuration (OpenAPI → TypeScript)
 ```
 
 ## Routes
@@ -103,18 +110,42 @@ src/
 | `/signup`  | Signup  | Guests only              |
 | `/profile` | Profile | Authenticated users only |
 
-## API Endpoints
+## API Client
 
-| Function                  | Method | Endpoint                    | Description                           |
-| ------------------------- | ------ | --------------------------- | ------------------------------------- |
-| `registerUserUsingEmail`  | POST   | `/api/users`                | Register with email, name, phone, NID |
-| `registerUserUsingGoogle` | POST   | `/api/users`                | Register via Google OAuth             |
-| `fetchCurrentUser`        | GET    | `/api/users/me`             | Get current user's profile            |
-| `updateUser`              | PATCH  | `/api/users/me`             | Update profile fields                 |
-| `getPresignedUploadUrl`   | POST   | `/api/s3/upload-request`    | Get S3 presigned URL for upload       |
-| `getPresignedPreviewUrl`  | GET    | `/api/s3/download-url?key=` | Get S3 presigned URL for preview      |
+The API client is auto-generated from the backend's OpenAPI spec using [Orval](https://orval.dev). Generated files live in `src/api/generated.ts` and `src/api/model/`.
 
-All endpoints require a Firebase ID token via `Authorization: Bearer <token>` header.
+```bash
+# Regenerate after backend API changes
+npm run sync-api
+```
+
+A custom fetch mutator (`src/api/custom-fetch.ts`) automatically injects the Firebase ID token and prepends the `/api` prefix to all requests.
+
+### Endpoints
+
+| Function             | Method | Endpoint                      | Description                   |
+| -------------------- | ------ | ----------------------------- | ----------------------------- |
+| `createUser`         | POST   | `/api/users`                  | Register a new user           |
+| `getCurrentUser`     | GET    | `/api/users/me`               | Get current user's profile    |
+| `updateCurrentUser`  | PATCH  | `/api/users/me`               | Update profile fields         |
+| `getListings`        | GET    | `/api/listings`               | Search published listings     |
+| `createListing`      | POST   | `/api/listings`               | Create a listing              |
+| `getListingById`     | GET    | `/api/listings/{id}`          | Get a listing by ID           |
+| `updateListingById`  | PATCH  | `/api/listings/{id}`          | Update a listing              |
+| `deleteListingById`  | DELETE | `/api/listings/{id}`          | Delete a listing              |
+| `getMyListings`      | GET    | `/api/listings/my`            | Get my listings               |
+| `getMySavedListings` | GET    | `/api/listings/saved`         | Get my saved listings         |
+| `getMyFavorites`     | GET    | `/api/listings/favorites`     | Get my favorite listings      |
+| `saveListing`        | POST   | `/api/listings/{id}/save`     | Save a listing                |
+| `unsaveListing`      | DELETE | `/api/listings/{id}/save`     | Unsave a listing              |
+| `addFavorite`        | POST   | `/api/listings/{id}/favorite` | Favorite a listing            |
+| `removeFavorite`     | DELETE | `/api/listings/{id}/favorite` | Unfavorite a listing          |
+| `getUploadUrl`       | POST   | `/api/s3/upload-request`      | Get S3 presigned upload URL   |
+| `getDownloadUrl`     | GET    | `/api/s3/download-url`        | Get S3 presigned download URL |
+| `deleteObject`       | DELETE | `/api/s3`                     | Delete an S3 object           |
+| `health`             | GET    | `/api/health`                 | Health check                  |
+
+All endpoints (except `getListings` and `health`) require a Firebase ID token via `Authorization: Bearer <token>` header.
 
 ## CI/CD Pipeline
 
@@ -150,6 +181,9 @@ npm run dev
 
 # Build for production
 npm run build
+
+# Regenerate API client from backend OpenAPI spec
+npm run sync-api
 
 # Lint
 npm run lint
