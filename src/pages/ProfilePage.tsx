@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import {
-  updateUser,
-  fetchCurrentUser,
-  getPresignedUploadUrl,
-  getPresignedPreviewUrl,
-} from '@/api/endpoints';
+  updateCurrentUser,
+  getCurrentUser,
+  getUploadUrl,
+  getDownloadUrl,
+} from '@/api/generated';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,9 +59,9 @@ export default function ProfilePage() {
     let ignore = false;
 
     const fetchUrl = () =>
-      getPresignedPreviewUrl(picUrl)
-        .then((url) => {
-          if (!ignore) setAvatarUrl(url);
+      getDownloadUrl({ key: picUrl })
+        .then((res) => {
+          if (!ignore) setAvatarUrl(res.data);
         })
         .catch(() => {
           if (!ignore) setAvatarUrl(null);
@@ -118,31 +118,33 @@ export default function ProfilePage() {
       }
 
       if (selectedFile) {
-        const { uploadUrl, key } = await getPresignedUploadUrl({
+        const uploadRes = await getUploadUrl({
           fileName: selectedFile.name,
           contentType: selectedFile.type,
           category: 'profile-pictures',
         });
 
-        await fetch(uploadUrl, {
+        await fetch(uploadRes.data.uploadUrl!, {
           method: 'PUT',
           headers: { 'Content-Type': selectedFile.type },
           body: selectedFile,
         });
 
-        payload.profilePictureUrl = key;
+        payload.profilePictureUrl = uploadRes.data.key!;
       }
 
-      await updateUser(payload);
-      const data = await fetchCurrentUser();
-      setBackendUser(data);
+      await updateCurrentUser(payload);
+      const userRes = await getCurrentUser();
+      setBackendUser(userRes.data);
 
-      if (selectedFile && data.profilePictureUrl) {
-        if (data.profilePictureUrl.startsWith('http')) {
-          setAvatarUrl(data.profilePictureUrl);
+      if (selectedFile && userRes.data.profilePictureUrl) {
+        if (userRes.data.profilePictureUrl.startsWith('http')) {
+          setAvatarUrl(userRes.data.profilePictureUrl);
         } else {
-          const url = await getPresignedPreviewUrl(data.profilePictureUrl);
-          setAvatarUrl(url);
+          const urlRes = await getDownloadUrl({
+            key: userRes.data.profilePictureUrl,
+          });
+          setAvatarUrl(urlRes.data);
         }
       }
 

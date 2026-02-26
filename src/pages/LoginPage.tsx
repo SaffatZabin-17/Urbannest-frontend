@@ -23,7 +23,7 @@ import GoogleIcon from '@/components/icons/GoogleIcon';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import { useNavigate } from 'react-router-dom';
-import { fetchCurrentUser } from '@/api/endpoints';
+import { getCurrentUser } from '@/api/generated';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +43,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      const data = await fetchCurrentUser();
-      setBackendUser(data);
+      const res = await getCurrentUser();
+      setBackendUser(res.data);
       navigate('/');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
@@ -60,8 +60,8 @@ export default function LoginPage() {
     setError('');
     try {
       await googleLogin();
-      const data = await fetchCurrentUser();
-      setBackendUser(data);
+      const res = await getCurrentUser();
+      setBackendUser(res.data);
       navigate('/');
     } catch {
       setError('Google sign-in failed. Please try again.');
